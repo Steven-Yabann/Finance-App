@@ -20,6 +20,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextAlign
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
+import com.example.finance_project.data.remote.RetrofitInstance
+import com.example.finance_project.ui.viewmodel.MarketViewModel
 
 // --- DATA MODELS ---
 
@@ -27,84 +34,34 @@ data class Commodity(val name: String, val symbol: String, val price: String, va
 data class Currency(val pair: String, val symbol: String, val price: String, val change: String, val percent: String)
 data class Stock(val name: String, val symbol: String, val price: String, val change: String, val percent: String)
 
+
 // --- MAIN MARKET SCREEN ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen() {
-    var selectedTab by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Commodities", "Currencies", "Stocks")
+    val viewModel: MarketViewModel = viewModel()
 
-    Scaffold(
-        topBar = { MarketTopBar() },
-        containerColor = Color.White
-    ) { padding ->
+    // Fetch Apple stock price when screen loads
+    LaunchedEffect(Unit) {
+        viewModel.fetchStockPrice("AAPL")
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- Title and Subtitle ---
-            Text(
-                text = "Market Trends",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-            )
-            Text(
-                text = "Real-time market data to understand investment opportunities",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // --- Buttons ---
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterButton("Live Data", Icons.Outlined.Bolt)
-                FilterButton("Refresh", Icons.Default.Refresh)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // --- Tabs ---
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color(0xFFF9F5FF),
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        Modifier
-                            .tabIndicatorOffset(tabPositions[selectedTab])
-                            .height(3.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = {
-                            Text(
-                                text = title,
-                                color = if (selectedTab == index) MaterialTheme.colorScheme.primary else Color.Gray,
-                                fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal
-                            )
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // --- Tab Content ---
-            when (selectedTab) {
-                0 -> CommoditiesTab()
-                1 -> CurrenciesTab()
-                2 -> StocksTab()
-            }
+            Text(text = "AAPL Stock Price", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "$${viewModel.stockPrice.value}", style = MaterialTheme.typography.headlineMedium)
         }
     }
 }
-
 // --- TOP BAR ---
 @Composable
 fun MarketTopBar() {
