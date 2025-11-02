@@ -27,6 +27,7 @@ import com.example.finance_project.ui.market.MarketScreen
 
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
 import com.example.finance_project.ui.screens.LearnScreen
+import com.example.finance_project.ui.screens.ProfileScreen
 
 
 // --- Data Classes for UI Content ---
@@ -103,10 +104,7 @@ fun MainScreen() {
             composable("learn") { LearnScreen() }
             composable("markets") { MarketScreen() }
             composable("profile") {
-                // TODO: Add your Profile screen later
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Profile Screen (coming soon)")
-                }
+                ProfileScreen()
             }
         }
     }
