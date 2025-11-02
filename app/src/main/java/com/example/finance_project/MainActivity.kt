@@ -22,11 +22,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.res.painterResource
+import com.example.finance_project.ui.market.MarketScreen
 
 
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
 import com.example.finance_project.ui.screens.LearnScreen
-import com.example.finance_project.ui.screens.MarketScreen
 
 
 // --- Data Classes for UI Content ---
