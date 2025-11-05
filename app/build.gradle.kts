@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -49,6 +50,11 @@ android {
 
 
 dependencies {
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
     // Import the Compose BOM to manage versions
     val composeBom = platform("androidx.compose:compose-bom:2024.06.00") // Check for latest stable version
     implementation(composeBom)
@@ -66,7 +72,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
 
     // For icons
-    implementation("androidx.compose.material:material-icons-extended") // You'll need this when adding real icons
+    implementation("androidx.compose.material:material-icons-extended") // You'''ll need this when adding real icons
 
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")

@@ -1,6 +1,7 @@
 package com.example.finance_project
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -23,10 +24,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.res.painterResource
 import com.example.finance_project.ui.market.MarketScreen
+import com.example.finance_project.ui.screens.SignupScreen
+import com.example.finance_project.ui.screens.LoginScreen
 
 
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
 import com.example.finance_project.ui.screens.LearnScreen
+import com.google.firebase.FirebaseApp
 import com.example.finance_project.ui.screens.ProfileScreen
 
 
@@ -75,6 +79,8 @@ val progressData = listOf(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+        Log.d("FirebaseInit", "Firebase initialized: ${FirebaseApp.getApps(this).isNotEmpty()}")
         setContent {
             // Use your app's theme here
             Finance_ProjectTheme { // Changed from YourAppTheme
@@ -91,13 +97,14 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
     val navController = rememberNavController()
 
+
     Scaffold(
         bottomBar = { AppBottomBar(navController) },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = if (FirebaseAuthManager.isUserLoggedIn()) "home" else "login",
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") { HomeScreenContent(items = progressData) }
@@ -106,9 +113,24 @@ fun MainScreen() {
             composable("profile") {
                 ProfileScreen()
             }
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = { navController.navigate("home") },
+                    onNavigateToSignup = { navController.navigate("signup") }
+                )
+            }
+            composable("signup") {
+                SignupScreen(
+                    onSignupSuccess = { navController.navigate("home") },
+                    onNavigateToLogin = { navController.navigate("login") }
+                )
+            }
         }
     }
 }
+
+
+
 
 
 // --- Top Bar Composable ---
