@@ -30,3 +30,19 @@ data class CurrencyExchangeData (
     @SerializedName("5. Exchange Rate")
     val exchangeRate: String?
 )
+
+data class CommoditiesResponse (
+    @SerializedName("interval")
+    val interval: String?,
+    @SerializedName("unit")
+    val unit: String?,
+    @SerializedName("data")
+    val quote: List<CommoditiesData>?
+)
+
+data class CommoditiesData(
+    @SerializedName("date")
+    val date: String?,
+    @SerializedName("value")
+    val value: String?
+)

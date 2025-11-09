@@ -72,7 +72,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
 
     // For icons
-    implementation("androidx.compose.material:material-icons-extended") // You'''ll need this when adding real icons
+    implementation("androidx.compose.material:material-icons-extended") // You'll need this when adding real icons
 
     // Testing dependencies
     testImplementation("junit:junit:4.13.2")
@@ -95,4 +95,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+
+    // Github repo for charts used for commodities
+    implementation(libs.ycharts)
 }

@@ -24,8 +24,14 @@ object FirebaseAuthManager {
         }
     }
 
-    fun logout () {
-        auth.signOut()
+    fun logout (): Result<String> {
+        return try {
+            auth.signOut()
+            Result.success("Logout successful")
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+
     }
 
     fun isUserLoggedIn(): Boolean = auth.currentUser != null
