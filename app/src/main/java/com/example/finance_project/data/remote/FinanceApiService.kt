@@ -2,6 +2,7 @@ package com.example.finance_project.data.remote
 
 import com.example.finance_project.data.model.GlobalQuoteResponse
 import com.example.finance_project.data.model.CurrencyExchangeResponse
+import com.example.finance_project.data.model.CommoditiesResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -24,10 +25,10 @@ interface FinanceApiService {
         @Query("apikey") apiKey: String
     ) : CurrencyExchangeResponse
 
-//    @GET("query")
-//    suspend fun getCommodities(
-//        @Query("function") function: String,
-//        @Query("interval") interval: String,
-//        @Query("apikey") apiKey: String
-//    ) : CommoditiesResponse
+    @GET("query")
+    suspend fun getCommodities(
+        @Query("function") function: String,
+        @Query("interval") interval: String,
+        @Query("apikey") apiKey: String
+    ) : CommoditiesResponse
 }

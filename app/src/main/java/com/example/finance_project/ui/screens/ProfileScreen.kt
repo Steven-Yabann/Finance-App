@@ -19,11 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import com.example.finance_project.R
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
+import com.example.finance_project.FirebaseAuthManager
+import com.example.finance_project.ui.screens.LoginScreen
 
 @Composable
 fun ProfileScreen() {
+    val navController = rememberNavController()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,7 +74,14 @@ fun ProfileScreen() {
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { /* TODO: Handle log out */ },
+            onClick = {
+                    val result = FirebaseAuthManager.logout()
+                    if (result.isSuccess) {
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),

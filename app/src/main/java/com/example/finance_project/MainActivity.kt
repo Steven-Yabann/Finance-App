@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -96,39 +97,62 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    val isLoggedIn = FirebaseAuthManager.isUserLoggedIn()
 
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            navController.navigate("home") {
+                popUpTo(0)
+            }
+        } else {
+            navController.navigate("login") {
+                popUpTo(0)
+            }
+        }
+    }
 
     Scaffold(
-        bottomBar = { AppBottomBar(navController) },
+        bottomBar = {
+            if (isLoggedIn) {
+                AppBottomBar(navController)
+            }
+        },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = if (FirebaseAuthManager.isUserLoggedIn()) "home" else "login",
+            startDestination = if (isLoggedIn) "home" else "login",
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") { HomeScreenContent(items = progressData) }
             composable("learn") { LearnScreen() }
             composable("markets") { MarketScreen() }
-            composable("profile") {
-                ProfileScreen()
-            }
+            composable("profile") { ProfileScreen() }
+
             composable("login") {
                 LoginScreen(
-                    onLoginSuccess = { navController.navigate("home") },
+                    onLoginSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
                     onNavigateToSignup = { navController.navigate("signup") }
                 )
             }
+
             composable("signup") {
                 SignupScreen(
-                    onSignupSuccess = { navController.navigate("home") },
+                    onSignupSuccess = {
+                        navController.navigate("home") {
+                            popUpTo("signup") { inclusive = true }
+                        }
+                    },
                     onNavigateToLogin = { navController.navigate("login") }
                 )
             }
         }
     }
 }
-
 
 
 
