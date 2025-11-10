@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.finance_project.R
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
@@ -26,8 +27,7 @@ import com.example.finance_project.FirebaseAuthManager
 import com.example.finance_project.ui.screens.LoginScreen
 
 @Composable
-fun ProfileScreen() {
-    val navController = rememberNavController()
+fun ProfileScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +54,9 @@ fun ProfileScreen() {
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             SectionTitle("Account")
-            SettingItem("Profile", "Edit your profile", Icons.Default.Person)
+            SettingItem("Profile", "Edit your profile", Icons.Default.Person) {
+                navController.navigate("progress")
+            }
             SettingItem("Learning Progress", "Manage your email", Icons.Default.Email)
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -104,11 +106,11 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun SettingItem(title: String, subtitle: String, icon: ImageVector, contentColor: Color = Color.Unspecified, isDelete: Boolean = false) {
+fun SettingItem(title: String, subtitle: String, icon: ImageVector, contentColor: Color = Color.Unspecified, isDelete: Boolean = false, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -154,6 +156,6 @@ fun SettingItem(title: String, subtitle: String, icon: ImageVector, contentColor
 @Composable
 fun ProfileScreenPreview() {
     Finance_ProjectTheme {
-        ProfileScreen()
+        ProfileScreen(rememberNavController())
     }
 }
