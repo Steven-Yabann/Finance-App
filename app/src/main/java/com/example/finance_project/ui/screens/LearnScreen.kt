@@ -1,6 +1,7 @@
 package com.example.finance_project.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,10 +18,29 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.finance_project.R
+import com.example.finance_project.ui.viewmodel.LearnViewModel
 
 @Composable
-fun LearnScreen() {
+fun LearnScreen(
+    navController: NavController,
+    viewModel: LearnViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val topics by viewModel.topics.collectAsState()
+
+    // Load once
+    LaunchedEffect(Unit) {
+        viewModel.loadTopics(context)
+    }
+
     Scaffold(
         topBar = { LearnTopBar() },
         containerColor = Color.White
@@ -39,55 +59,29 @@ fun LearnScreen() {
                 )
             )
             Text(
-                text = "Which topic would be of Interest to you Today?",
+                text = "Which topic would be of interest to you today?",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
-            LearnCard(
-                title = "Treasury Securities",
-                description = "Learn about T-Bills, T-Bonds, and government securities",
-                color = Color(0xFF4CAF50),
-                progress = 6f / 8f,
-                lessons = 8,
-                duration = "~45 min",
-                buttonText = "Continue"
-            )
-
-            LearnCard(
-                title = "ETFs & Index Funds",
-                description = "Exchange-traded funds and diversified investing",
-                color = Color(0xFF2196F3),
-                progress = 4f / 10f,
-                lessons = 10,
-                duration = "~45 min",
-                buttonText = "Continue"
-            )
-
-            LearnCard(
-                title = "Mutual Funds",
-                description = "Professional fund management and pooled investments",
-                color = Color(0xFF9C27B0),
-                progress = 0f,
-                lessons = 12,
-                duration = "~45 min",
-                buttonText = "Start"
-            )
-
-            LearnCard(
-                title = "Specialized Funds",
-                description = "REITs, commodities, and alternative investments",
-                color = Color(0xFFFF9800),
-                progress = 0f,
-                lessons = 6,
-                duration = "~45 min",
-                buttonText = "Start"
-            )
+            
+            topics.forEach { topic ->
+                LearnCard(
+                    title = topic.title,
+                    description = topic.subtitle,
+                    color = Color(0xFF4CAF50),
+                    progress = 0f,
+                    lessons = topic.sections.size,
+                    duration = "~${topic.sections.size * 5} min",
+                    buttonText = "Start",
+                    onClick = { navController.navigate("topicDetail/${topic.id}") }
+                )
+            }
         }
     }
 }
+
 
 @Composable
 fun LearnTopBar() {
@@ -127,12 +121,14 @@ fun LearnCard(
     progress: Float,
     lessons: Int,
     duration: String,
-    buttonText: String
+    buttonText: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable{ onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -221,7 +217,7 @@ fun LearnCard(
                 }
 
                 Button(
-                    onClick = {},
+                    onClick = onClick,
                     shape = RoundedCornerShape(6.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (buttonText == "Continue") Color.Black else Color.LightGray,
@@ -241,5 +237,5 @@ fun LearnCard(
 @Preview(showBackground = true)
 @Composable
 fun LearnScreenPreview() {
-    LearnScreen()
+    LearnScreen(navController = rememberNavController())
 }
