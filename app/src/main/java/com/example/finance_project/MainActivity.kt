@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +34,7 @@ import com.example.finance_project.ui.theme.Finance_ProjectTheme
 import com.example.finance_project.ui.screens.LearnScreen
 import com.google.firebase.FirebaseApp
 import com.example.finance_project.ui.screens.ProfileScreen
+import com.example.finance_project.ui.screens.TopicDetailScreen
 
 
 // --- Data Classes for UI Content ---
@@ -78,8 +80,11 @@ val progressData = listOf(
 // --- MainActivity: Entry point of the app ---
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        androidx.compose.foundation.ComposeFoundationFlags.isNonComposedClickableEnabled = false
+
         FirebaseApp.initializeApp(this)
         Log.d("FirebaseInit", "Firebase initialized: ${FirebaseApp.getApps(this).isNotEmpty()}")
         setContent {
@@ -125,9 +130,13 @@ fun MainScreen() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") { HomeScreenContent(items = progressData) }
-            composable("learn") { LearnScreen() }
+            composable("learn") { LearnScreen(navController) }
             composable("markets") { MarketScreen() }
             composable("profile") { ProfileScreen() }
+            composable("topicDetail/{topicId}") { backStackEntry ->
+                val topicId = backStackEntry.arguments?.getString("topicId")
+                TopicDetailScreen(topicId = topicId)
+            }
 
             composable("login") {
                 LoginScreen(

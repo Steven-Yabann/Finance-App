@@ -50,10 +50,14 @@ android {
 
 
 dependencies {
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation(libs.androidx.runtime)
 
     // Import the Compose BOM to manage versions
     val composeBom = platform("androidx.compose:compose-bom:2024.06.00") // Check for latest stable version

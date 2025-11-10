@@ -1,0 +1,36 @@
+[
+  {
+    "id": "1",
+    "title": "Treasury Bills (T-Bills)",
+    "subtitle": "Short-term government securities",
+    "imageUrl": "https://example.com/images/tbills.png",
+    "videoUrl": "https://www.youtube.com/watch?v=example",
+    "sections": [
+      {
+        "title": "What are T-Bills?",
+        "content": "T-Bills are short-term debt instruments issued by the government to raise funds. They typically mature in less than one year."
+      },
+      {
+        "title": "How They Work",
+        "content": "Investors buy T-Bills at a discount and receive the full face value at maturity. The difference represents the earned interest."
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Bonds",
+    "subtitle": "Long-term government or corporate debt instruments",
+    "imageUrl": "https://example.com/images/bonds.png",
+    "videoUrl": "https://www.youtube.com/watch?v=example2",
+    "sections": [
+      {
+        "title": "Overview",
+        "content": "Bonds are long-term investments that pay periodic interest and return the principal at maturity."
+      },
+      {
+        "title": "Risk and Return",
+        "content": "Bonds generally offer lower risk compared to stocks but can vary depending on the issuer's credit rating."
+      }
+    ]
+  }
+]
