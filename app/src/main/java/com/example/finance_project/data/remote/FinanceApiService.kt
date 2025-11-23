@@ -3,6 +3,7 @@ package com.example.finance_project.data.remote
 import com.example.finance_project.data.model.GlobalQuoteResponse
 import com.example.finance_project.data.model.CurrencyExchangeResponse
 import com.example.finance_project.data.model.CommoditiesResponse
+import com.example.finance_project.data.model.CryptoNewsResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -31,4 +32,14 @@ interface FinanceApiService {
         @Query("interval") interval: String,
         @Query("apikey") apiKey: String
     ) : CommoditiesResponse
+}
+
+// Separate interface for crypto news API
+interface CryptoNewsApiService {
+    @GET("v2/news/")
+    suspend fun getCryptoNews(
+        @Query("lang") language: String = "EN",
+        @Query("sortOrder") sortOrder: String = "latest",
+        @Query("api_key") apiKey: String
+    ): CryptoNewsResponse
 }

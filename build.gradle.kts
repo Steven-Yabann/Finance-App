@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 
 
+    // ✅ Add this line
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
@@ -21,3 +22,7 @@ buildscript {
 }
 
 
+        // ✅ Make sure this is present
+        classpath("com.google.gms:google-services:4.4.2")
+        }
+}

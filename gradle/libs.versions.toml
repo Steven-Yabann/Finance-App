@@ -11,6 +11,7 @@ constraintlayout = "2.2.1"
 navigationFragmentKtx = "2.9.5"
 navigationUiKtx = "2.9.5"
 composeCompiler = "1.5.14"
+googleServices = "4.4.2"
 ycharts = "2.1.0"
 runtime = "1.9.4"
 
@@ -31,3 +32,4 @@ androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", versi
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
