@@ -99,23 +99,28 @@ fun MainScreen() {
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
+        val sharedViewModel: CryptoNewsViewModel = viewModel()
+        
         NavHost(
             navController = navController,
             startDestination = if (isLoggedIn) "home" else "login",
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") { 
-                val viewModel: CryptoNewsViewModel = viewModel()
-                CryptoNewsScreen(viewModel = viewModel, navController = navController) 
+                CryptoNewsScreen(viewModel = sharedViewModel, navController = navController) 
             }
             composable("article_detail/{articleIndex}") { backStackEntry ->
                 val articleIndex = backStackEntry.arguments?.getString("articleIndex")?.toIntOrNull() ?: 0
-                val viewModel: CryptoNewsViewModel = viewModel()
-                val article = viewModel.newsState.value.news.getOrNull(articleIndex)
+                Log.d("Navigation", "Navigating to article detail with index: $articleIndex")
+                
+                val newsState = sharedViewModel.newsState.value
+                val article = newsState.news.getOrNull(articleIndex)
+                
                 if (article != null) {
+                    Log.d("Navigation", "Article found: ${article.title}")
                     ArticleDetailScreen(article = article, navController = navController)
                 } else {
-                    // Article not found, navigate back
+                    Log.e("Navigation", "Article not found at index $articleIndex, total articles: ${newsState.news.size}")
                     LaunchedEffect(Unit) {
                         navController.navigateUp()
                     }
@@ -370,7 +375,13 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                 RealCryptoNewsCard(
                     article = article,
                     onClick = {
-                        navController.navigate("article_detail/$index")
+                        Log.d("Navigation", "Card clicked! Article index: $index, title: ${article.title}")
+                        try {
+                            navController.navigate("article_detail/$index")
+                            Log.d("Navigation", "Navigation triggered successfully")
+                        } catch (e: Exception) {
+                            Log.e("Navigation", "Navigation failed: ${e.message}")
+                        }
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
