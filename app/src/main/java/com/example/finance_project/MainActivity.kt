@@ -6,13 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,7 +106,20 @@ fun MainScreen() {
         ) {
             composable("home") { 
                 val viewModel: CryptoNewsViewModel = viewModel()
-                CryptoNewsScreen(viewModel = viewModel) 
+                CryptoNewsScreen(viewModel = viewModel, navController = navController) 
+            }
+            composable("article_detail/{articleIndex}") { backStackEntry ->
+                val articleIndex = backStackEntry.arguments?.getString("articleIndex")?.toIntOrNull() ?: 0
+                val viewModel: CryptoNewsViewModel = viewModel()
+                val article = viewModel.newsState.value.news.getOrNull(articleIndex)
+                if (article != null) {
+                    ArticleDetailScreen(article = article, navController = navController)
+                } else {
+                    // Article not found, navigate back
+                    LaunchedEffect(Unit) {
+                        navController.navigateUp()
+                    }
+                }
             }
             composable("learn") { LearnScreen(navController) }
             composable("markets") { MarketScreen() }
@@ -228,7 +242,7 @@ data class BottomNavItem(
 // --- Main Content Area Composable ---
 
 @Composable
-fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewModel) {
+fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewModel, navController: NavHostController) {
     val newsState = viewModel.newsState.value
     
     LazyColumn(
@@ -250,7 +264,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        text = "Real-time cryptocurrency news from around the globe",
+                        text = "Latest cryptocurrency news • Tap to read more",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )
@@ -262,7 +276,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                         onClick = { viewModel.retryLoading() }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            imageVector = Icons.Filled.Refresh,
                             contentDescription = "Refresh",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -311,7 +325,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Warning,
+                            imageVector = Icons.Filled.Warning,
                             contentDescription = "Error",
                             tint = Color.Red
                         )
@@ -337,7 +351,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                             )
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = Icons.Filled.Refresh,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -350,10 +364,15 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
             }
         }
 
-        // News list
-        newsState.news.forEach { article ->
+        // News list - Limited to 10 cards for better performance
+        newsState.news.take(10).forEachIndexed { index, article ->
             item {
-                RealCryptoNewsCard(article = article)
+                RealCryptoNewsCard(
+                    article = article,
+                    onClick = {
+                        navController.navigate("article_detail/$index")
+                    }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
@@ -371,7 +390,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Filled.Info,
                             contentDescription = "No news",
                             tint = Color.Gray,
                             modifier = Modifier.size(48.dp)
@@ -397,13 +416,15 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
 // --- Reusable Card Composable for Real API Data ---
 
 @Composable
-fun RealCryptoNewsCard(article: CryptoNewsArticle) {
+fun RealCryptoNewsCard(article: CryptoNewsArticle, onClick: () -> Unit = {}) {
     val sentiment = article.getSentiment()
     val category = article.getMainCategory()
     val timeAgo = article.getFormattedTime()
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -521,6 +542,205 @@ fun Badge(text: String, color: Color) {
             fontSize = 10.sp,
             fontWeight = FontWeight.Medium
         )
+    }
+}
+
+// --- Article Detail Screen ---
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ArticleDetailScreen(article: CryptoNewsArticle, navController: NavHostController) {
+    val sentiment = article.getSentiment()
+    val category = article.getMainCategory()
+    val timeAgo = article.getFormattedTime()
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Article Details",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            item {
+                // Header with category and sentiment
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = Color(0xFF2196F3).copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = category,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color(0xFF2196F3),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = sentiment.second.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = sentiment.first,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = sentiment.second,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Title
+                Text(
+                    text = article.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 32.sp
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Source and time info
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Source: ${article.sourceInfo.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF2196F3),
+                            fontWeight = FontWeight.Medium
+                        )
+                        
+                        Text(
+                            text = timeAgo,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Full article body
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Text(
+                            text = "Article Content",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Text(
+                            text = article.body,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black.copy(alpha = 0.8f),
+                            lineHeight = 24.sp
+                        )
+                    }
+                }
+                
+                // Tags if available
+                if (article.tags.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    Text(
+                        text = "Tags",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val tags = article.tags.split("|").filter { it.isNotBlank() }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        tags.take(5).forEach { tag ->
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = tag.trim(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
     }
 }
 
