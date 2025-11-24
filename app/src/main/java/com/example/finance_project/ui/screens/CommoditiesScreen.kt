@@ -21,11 +21,20 @@ import co.yml.charts.ui.linechart.model.LineStyle
 import co.yml.charts.ui.linechart.model.LineType
 import com.example.finance_project.ui.viewmodel.CommodityDataPoint
 import com.example.finance_project.ui.viewmodel.MarketViewModel
-import androidx.compose.foundation.layout.*
+import co.yml.charts.ui.linechart.model.IntersectionPoint
+import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
+import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
+import co.yml.charts.ui.linechart.model.ShadowUnderLine
+import androidx.compose.ui.graphics.Brush
+import com.example.finance_project.ui.theme.*
+import com.example.finance_project.ui.theme.TextSecondary
+import com.example.finance_project.ui.theme.TextPrimary
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -68,7 +77,7 @@ fun CommoditiesScreen(viewModel: MarketViewModel = viewModel()) {
         if (isLoading) {
             CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
         } else if (data.isNotEmpty()) {
-            CommodityLineChart(data)
+            CommodityLineChart(data, selectedCommodity)
         } else {
             Text("No data available", color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
         }
@@ -76,20 +85,30 @@ fun CommoditiesScreen(viewModel: MarketViewModel = viewModel()) {
 }
 
 @Composable
-fun CommodityLineChart(data: List<CommodityDataPoint>) {
+fun CommodityLineChart(
+    data: List<CommodityDataPoint>,
+    commodity: String
+) {
     if (data.isEmpty()) {
-        // nothing to draw
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("No data to display", color = Color.Gray)
+            Text("No data to display", color = TextSecondary)
         }
         return
     }
 
-    // prepare short X labels: "MMM yy"
+    val commodityColor = getCommodityColor(commodity)
+
+    // Calculate trend
+    val firstPrice = data.first().value
+    val lastPrice = data.last().value
+    val isPositiveTrend = lastPrice >= firstPrice
+
+    // Date formatting
     val inFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val outFmt = DateTimeFormatter.ofPattern("MMM yy")
 
@@ -97,49 +116,72 @@ fun CommodityLineChart(data: List<CommodityDataPoint>) {
         Point(index.toFloat(), d.value)
     }
 
-    // compute min/max for Y axis
+    // Compute min/max for Y axis with padding
     val maxPrice = data.maxOf { it.value }
     val minPrice = data.minOf { it.value }
+    val priceRange = maxPrice - minPrice
+    val paddedMax = maxPrice + (priceRange * 0.1f)
+    val paddedMin = (minPrice - (priceRange * 0.1f)).coerceAtLeast(0f)
     val steps = 5
 
-    // X axis config: show short labels and skip some to avoid crowding
+    // X axis config
     val xAxisData = AxisData.Builder()
         .labelData { idx ->
             val i = idx.coerceIn(0, data.lastIndex)
             try {
                 LocalDate.parse(data[i].date, inFmt).format(outFmt)
             } catch (_: Exception) {
-                // fallback: last 5 chars of date
                 data[i].date.takeLast(5)
             }
         }
-        .axisLabelColor(Color.Gray)
-        .axisLineColor(Color.LightGray)
-        .startDrawPadding(8.dp)
+        .axisLabelColor(TextSecondary)
+        .axisLineColor(Color(0xFFE5E7EB))
+        .startDrawPadding(12.dp)
         .build()
 
-    // Y axis config: numeric labels between min and max
+    // Y axis config
     val yAxisData = AxisData.Builder()
         .steps(steps)
         .labelData { stepIndex ->
-            val range = maxPrice - minPrice
-            val value = minPrice + (stepIndex * (range / steps.toFloat()))
-            // format with no trailing .0 when not needed
+            val range = paddedMax - paddedMin
+            val value = paddedMin + (stepIndex * (range / steps.toFloat()))
             if (value % 1.0f == 0f) {
                 value.roundToInt().toString()
             } else {
                 "%.2f".format(value)
             }
         }
-        .axisLabelColor(Color.Gray)
-        .axisLineColor(Color.LightGray)
+        .axisLabelColor(TextSecondary)
+        .axisLineColor(Color(0xFFE5E7EB))
         .build()
 
-    // Line style
+    // Enhanced line style with gradient
     val line = Line(
         dataPoints = points,
-        lineStyle = LineStyle(color = MaterialTheme.colorScheme.primary, width = 3f),
-        // use defaults for point style (no dots) and smoothness handled by library defaults
+        lineStyle = LineStyle(
+            color = commodityColor,
+            lineType = LineType.SmoothCurve(isDotted = false),
+            width = 4f
+        ),
+        intersectionPoint = IntersectionPoint(
+            color = commodityColor,
+            radius = 6.dp
+        ),
+        selectionHighlightPoint = SelectionHighlightPoint(
+            color = commodityColor,
+            radius = 8.dp
+        ),
+        shadowUnderLine = ShadowUnderLine(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    commodityColor.copy(alpha = 0.3f),
+                    commodityColor.copy(alpha = 0.05f),
+                    Color.Transparent
+                )
+            ),
+            alpha = 0.5f
+        ),
+        selectionHighlightPopUp = SelectionHighlightPopUp()
     )
 
     val linePlot = LinePlotData(lines = listOf(line))
@@ -148,31 +190,53 @@ fun CommodityLineChart(data: List<CommodityDataPoint>) {
         linePlotData = linePlot,
         xAxisData = xAxisData,
         yAxisData = yAxisData,
-        gridLines = GridLines(color = Color.LightGray.copy(alpha = 0.35f)),
+        gridLines = GridLines(
+            color = Color(0xFFE5E7EB).copy(alpha = 0.5f)
+        ),
         backgroundColor = Color.Transparent
     )
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(360.dp)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .fillMaxSize()
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Commodity Price (Monthly)",
-            style = MaterialTheme.typography.titleMedium,
-            fontSize = 18.sp,
-            color = Color.Black
-        )
+        // Chart Title with Trend Indicator
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "$commodity Price Trend",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            )
 
+            Icon(
+                imageVector = if (isPositiveTrend) Icons.Default.TrendingUp else Icons.Default.TrendingDown,
+                contentDescription = null,
+                tint = if (isPositiveTrend) PositiveGreen else NegativeRed,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Date Range
         Text(
             text = "${data.first().date} → ${data.last().date}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = TextSecondary
+            )
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Chart
         LineChart(
             modifier = Modifier
                 .fillMaxWidth()
@@ -180,14 +244,29 @@ fun CommodityLineChart(data: List<CommodityDataPoint>) {
             lineChartData = lineChartData
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Y-axis Label
         Text(
             text = "Price (USD / metric ton)",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.DarkGray,
-            modifier = Modifier.padding(top = 8.dp)
+            style = MaterialTheme.typography.labelMedium.copy(
+                color = TextSecondary
+            )
         )
     }
 }
+
+private fun getCommodityColor(commodity: String): Color {
+    return when (commodity.uppercase()) {
+        "WHEAT" -> WheatColor
+        "COPPER" -> CopperColor
+        "ALUMINUM" -> AluminumColor
+        "GOLD" -> GoldColor
+        else -> NeutralBlue
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

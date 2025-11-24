@@ -1,14 +1,18 @@
 package com.example.finance_project.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +32,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.finance_project.R
 import com.example.finance_project.ui.viewmodel.LearnViewModel
 
+// Color Palette
+private val FinanceGreen = Color(0xFF10B981)
+private val TechBlue = Color(0xFF3B82F6)
+private val GoldYellow = Color(0xFFF59E0B)
+private val PurpleViolet = Color(0xFF8B5CF6)
+private val OrangeRed = Color(0xFFEF4444)
+private val TealCyan = Color(0xFF06B6D4)
+private val BackgroundLight = Color(0xFFF8FAFC)
+private val TextPrimary = Color(0xFF1E293B)
+private val TextSecondary = Color(0xFF64748B)
+
 @Composable
 fun LearnScreen(
     navController: NavController,
@@ -35,86 +50,196 @@ fun LearnScreen(
 ) {
     val context = LocalContext.current
     val topics by viewModel.topics.collectAsState()
+    val isLoading = topics.isEmpty()
 
-    // Load once
+    // Load topics once
     LaunchedEffect(Unit) {
         viewModel.loadTopics(context)
     }
 
     Scaffold(
-        topBar = { LearnTopBar() },
-        containerColor = Color.White
+        topBar = { EnhancedLearnTopBar() },
+        containerColor = BackgroundLight
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                text = "Welcome!",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold
+            // Header Section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Text(
+                    text = "Welcome Back",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
                 )
-            )
-            Text(
-                text = "Which topic would be of interest to you today?",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            
-            topics.forEach { topic ->
-                LearnCard(
-                    title = topic.title,
-                    description = topic.subtitle,
-                    color = Color(0xFF4CAF50),
-                    progress = 0f,
-                    lessons = topic.sections.size,
-                    duration = "~${topic.sections.size * 5} min",
-                    buttonText = "Start",
-                    onClick = { navController.navigate("topicDetail/${topic.id}") }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Continue your learning journey",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = TextSecondary
+                    )
                 )
             }
+
+            // Stats Cards Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StatsCard(
+                    title = "Completed",
+                    value = "0",
+                    icon = R.drawable.ic_lessons,
+                    color = FinanceGreen,
+                    modifier = Modifier.weight(1f)
+                )
+                StatsCard(
+                    title = "In Progress",
+                    value = "${topics.size}",
+                    icon = R.drawable.ic_time,
+                    color = TechBlue,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Section Title
+            Text(
+                text = "Explore Topics",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                ),
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Loading State
+            if (isLoading) {
+                repeat(3) {
+                    ShimmerLearnCard(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+                }
+            } else {
+                // Topic Cards
+                topics.forEachIndexed { index, topic ->
+                    val cardColor = getTopicColor(index)
+                    EnhancedLearnCard(
+                        title = topic.title,
+                        description = topic.subtitle,
+                        color = cardColor,
+                        progress = 0f,
+                        lessons = topic.sections.size,
+                        duration = "~${topic.sections.size * 5} min",
+                        buttonText = "Start",
+                        onClick = { navController.navigate("topicDetail/${topic.id}") },
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
-
 @Composable
-fun LearnTopBar() {
+fun EnhancedLearnTopBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .background(Color.White)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Profile Avatar
         Box(
             modifier = Modifier
-                .size(36.dp)
-                .background(Color(0xFFE0E0E0), CircleShape),
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(PurpleViolet, TechBlue)
+                    )
+                )
+                .clickable { /* Navigate to profile */ },
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_person), // replace with your own vector
+                painter = painterResource(id = R.drawable.ic_person),
                 contentDescription = "Profile",
-                tint = Color.Black
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
         }
-
-        Icon(
-            painter = painterResource(id = R.drawable.ic_menu),
-            contentDescription = "Menu",
-            tint = Color.Black
-        )
     }
 }
 
 @Composable
-fun LearnCard(
+fun StatsCard(
+    title: String,
+    value: String,
+    icon: Int,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(color.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = TextSecondary
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun EnhancedLearnCard(
     title: String,
     description: String,
     color: Color,
@@ -122,120 +247,299 @@ fun LearnCard(
     lessons: Int,
     duration: String,
     buttonText: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable{ onClick() },
-        shape = RoundedCornerShape(12.dp),
+            .scale(scale)
+            .clickable {
+                isPressed = true
+                onClick()
+            },
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            color.copy(alpha = 0.05f),
+                            Color.White
+                        )
+                    )
+                )
+                .padding(20.dp)
+        ) {
+            // Header Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icon Box with Gradient
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(color.copy(alpha = 0.15f), RoundedCornerShape(8.dp)),
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    color.copy(alpha = 0.2f),
+                                    color.copy(alpha = 0.1f)
+                                )
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_book),
                         contentDescription = title,
-                        tint = color
+                        tint = color,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                Column {
+                // Title and Description
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = description,
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
-                        maxLines = 1,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = TextSecondary
+                        ),
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Progress",
-                style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
-            )
-
-            LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .padding(vertical = 4.dp),
-                color = Color.Black,
-                trackColor = Color(0xFFE0E0E0)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+            // Progress Section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(
+                    text = "Progress",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = TextSecondary,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Text(
+                    text = "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = color,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Animated Progress Bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFFF1F5F9))
+            ) {
+                val animatedProgress by animateFloatAsState(
+                    targetValue = progress,
+                    animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animatedProgress)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(color, color.copy(alpha = 0.7f))
+                            )
+                        )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Footer Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Lessons and Duration
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_lessons),
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = "$lessons lessons",
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
+                    // Lessons
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_lessons),
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$lessons lessons",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = TextSecondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
 
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_time),
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = duration,
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray),
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
+                    // Duration
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_time),
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = duration,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = TextSecondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
                 }
 
+                // Action Button
                 Button(
                     onClick = onClick,
-                    shape = RoundedCornerShape(6.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (buttonText == "Continue") Color.Black else Color.LightGray,
+                        containerColor = color,
                         contentColor = Color.White
                     ),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 0.dp,
+                        pressedElevation = 0.dp
+                    )
                 ) {
-                    Text(buttonText, fontSize = 12.sp)
+                    Text(
+                        text = buttonText,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
                 }
             }
         }
     }
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            kotlinx.coroutines.delay(150)
+            isPressed = false
+        }
+    }
 }
 
+@Composable
+fun ShimmerLearnCard(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
 
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.LightGray.copy(alpha = alpha))
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.LightGray.copy(alpha = alpha))
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color.LightGray.copy(alpha = alpha))
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.LightGray.copy(alpha = alpha))
+            )
+        }
+    }
+}
+
+// Helper function to get topic-specific colors
+private fun getTopicColor(index: Int): Color {
+    val colors = listOf(
+        FinanceGreen,
+        TechBlue,
+        GoldYellow,
+        PurpleViolet,
+        TealCyan,
+        OrangeRed
+    )
+    return colors[index % colors.size]
+}
 
 @Preview(showBackground = true)
 @Composable
-fun LearnScreenPreview() {
+fun EnhancedLearnScreenPreview() {
     LearnScreen(navController = rememberNavController())
 }
