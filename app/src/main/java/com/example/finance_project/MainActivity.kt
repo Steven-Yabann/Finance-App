@@ -131,7 +131,7 @@ fun MainScreen() {
             composable("profile") { ProfileScreen(navController) }
             composable("topicDetail/{topicId}") { backStackEntry ->
                 val topicId = backStackEntry.arguments?.getString("topicId")
-                TopicDetailScreen(topicId = topicId)
+                TopicDetailScreen(topicId = topicId, navController = navController)
             }
             composable("progress") {
                 ProgressScreen(navController = navController)

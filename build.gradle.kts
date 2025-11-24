@@ -22,7 +22,3 @@ buildscript {
 }
 
 
-        // ✅ Make sure this is present
-        classpath("com.google.gms:google-services:4.4.2")
-        }
-}

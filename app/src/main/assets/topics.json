@@ -3,8 +3,8 @@
     "id": "1",
     "title": "Treasury Bills (T-Bills)",
     "subtitle": "Short-term government securities",
-    "imageUrl": "https://example.com/images/tbills.png",
-    "videoUrl": "https://www.youtube.com/watch?v=example",
+    "imageUrl": "https://www.istockphoto.com/photo/retro-style-concrete-wall-engraved-with-the-word-treasury-illustration-of-the-gm1706620572-539294083",
+    "videoUrl": "https://www.youtube.com/watch?v=-asw2vC7C3Q",
     "sections": [
       {
         "title": "What are T-Bills?",
@@ -21,7 +21,7 @@
     "title": "Bonds",
     "subtitle": "Long-term government or corporate debt instruments",
     "imageUrl": "https://example.com/images/bonds.png",
-    "videoUrl": "https://www.youtube.com/watch?v=example2",
+    "videoUrl": "https://www.youtube.com/watch?v=PBH-Vgwnekw",
     "sections": [
       {
         "title": "Overview",
@@ -30,6 +30,40 @@
       {
         "title": "Risk and Return",
         "content": "Bonds generally offer lower risk compared to stocks but can vary depending on the issuer's credit rating."
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "title": "Stocks (Equities)",
+    "subtitle": "Ownership shares in a company",
+    "imageUrl": "https://images.unsplash.com/photo-1621575811771-46b5a34e00b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&q=80&w=1080",
+    "videoUrl": "https://www.youtube.com/watch?v=kTxx_Jpnpn0",
+    "sections": [
+      {
+        "title": "What are Stocks?",
+        "content": "Stocks, or equities, represent partial ownership in a public company. Investors buy them for potential capital appreciation (the stock price rising) and for income through dividend payments."
+      },
+      {
+        "title": "Types and Risks",
+        "content": "There are two main types: Common stock (with voting rights) and Preferred stock (with priority on dividends). Stocks offer the greatest potential for long-term growth but also carry a higher risk due to potential dramatic price fluctuations."
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "title": "Mutual Funds",
+    "subtitle": "Pooled investments managed by professionals",
+    "imageUrl": "https://images.unsplash.com/photo-1579621970563-ed118a8b16c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&q=80&w=1080",
+    "videoUrl": "https://www.youtube.com/watch?v=T-nmNeW8AM4",
+    "sections": [
+      {
+        "title": "What is a Mutual Fund?",
+        "content": "A Mutual Fund is an investment vehicle that pools money from many investors to purchase a diversified portfolio of securities like stocks, bonds, and money market instruments."
+      },
+      {
+        "title": "Key Benefits",
+        "content": "The funds are managed by a professional fund manager who makes investment decisions. The primary benefit is diversification, which helps reduce the risk typically associated with investing in a single stock or security."
       }
     ]
   }
