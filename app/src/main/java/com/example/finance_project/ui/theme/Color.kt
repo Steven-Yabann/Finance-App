@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 
 // Primary Brand Colors - White and Green Theme
 val BrandGreen = Color(0xFF063B29)           // Main green from splash screen
-val BrandGreenDark = Color(0xFF059669)       // Darker green for pressed states
+val BrandGreenDark = Color(0xFF044F37)       // Darker green for pressed states
 val BrandGreenLight = Color(0xFF34D399)      // Lighter green for hover states
 val BrandGreenSurface = Color(0xFFD1FAE5)    // Very light green for surfaces
 
