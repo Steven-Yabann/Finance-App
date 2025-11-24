@@ -100,6 +100,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
 
+    // Pull-to-refresh support for Material 3
+    implementation("androidx.compose.material3:material3:1.2.1")
+
     // Github repo for charts used for commodities
     implementation(libs.ycharts)
 }

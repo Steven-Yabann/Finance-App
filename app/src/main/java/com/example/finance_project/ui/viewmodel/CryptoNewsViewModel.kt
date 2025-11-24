@@ -17,6 +17,11 @@ class CryptoNewsViewModel : ViewModel() {
     private val _newsState = mutableStateOf(CryptoNewsState())
     val newsState: State<CryptoNewsState> = _newsState
     
+    private val _searchQuery = mutableStateOf("")
+    val searchQuery: State<String> = _searchQuery
+    
+    private val _allNews = mutableStateOf<List<CryptoNewsArticle>>(emptyList())
+    
     init {
         loadCryptoNews()
     }
@@ -27,11 +32,16 @@ class CryptoNewsViewModel : ViewModel() {
             
             repository.getCryptoNews()
                 .onSuccess { response ->
+                    _allNews.value = response.data
                     _newsState.value = _newsState.value.copy(
                         isLoading = false,
                         news = response.data,
                         error = null
                     )
+                    // Apply current search filter if any
+                    if (_searchQuery.value.isNotEmpty()) {
+                        searchNews(_searchQuery.value)
+                    }
                 }
                 .onFailure { exception ->
                     _newsState.value = _newsState.value.copy(
@@ -40,6 +50,25 @@ class CryptoNewsViewModel : ViewModel() {
                     )
                 }
         }
+    }
+    
+    fun searchNews(query: String) {
+        _searchQuery.value = query
+        if (query.isEmpty()) {
+            _newsState.value = _newsState.value.copy(news = _allNews.value)
+        } else {
+            val filteredNews = _allNews.value.filter { article ->
+                article.title.contains(query, ignoreCase = true) ||
+                article.body.contains(query, ignoreCase = true) ||
+                article.tags.contains(query, ignoreCase = true) ||
+                article.categories.contains(query, ignoreCase = true)
+            }
+            _newsState.value = _newsState.value.copy(news = filteredNews)
+        }
+    }
+    
+    fun clearSearch() {
+        searchNews("")
     }
     
     fun retryLoading() {

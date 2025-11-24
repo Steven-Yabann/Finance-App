@@ -10,17 +10,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -249,180 +252,292 @@ data class BottomNavItem(
 @Composable
 fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewModel, navController: NavHostController) {
     val newsState = viewModel.newsState.value
+    val searchQuery by viewModel.searchQuery
+    val keyboardController = LocalSoftwareKeyboardController.current
     
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-            // Title Section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Crypto News",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Text(
-                        text = "Latest cryptocurrency news • Tap to read more",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                }
-                
-                // Refresh button
-                if (!newsState.isLoading) {
-                    IconButton(
-                        onClick = { viewModel.retryLoading() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-
-        // Loading state
-        if (newsState.isLoading) {
             item {
-                Box(
+                Spacer(modifier = Modifier.height(8.dp))
+                // Title Section
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Column {
                         Text(
-                            text = "Loading latest crypto news...",
+                            text = "Crypto News",
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "Latest cryptocurrency news • ${newsState.news.size} articles",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.Gray
                         )
                     }
+                    
+                    // Refresh button
+                    IconButton(
+                        onClick = { viewModel.loadCryptoNews() },
+                        enabled = !newsState.isLoading
+                    ) {
+                        if (newsState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
-            }
-        }
-        
-        // Error state
-        newsState.error?.let { error ->
-            item {
-                Card(
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.searchNews(it) },
+                    label = { Text("Search news...") },
+                    placeholder = { Text("Bitcoin, Ethereum, DeFi, etc.") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.clearSearch() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear search"
+                                )
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            keyboardController?.hide()
+                        }
+                    )
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+
+            // Loading state
+            if (newsState.isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Warning,
-                            contentDescription = "Error",
-                            tint = Color.Red
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Failed to load news",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = error,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Red.copy(alpha = 0.7f),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.retryLoading() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red,
-                                contentColor = Color.White
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Retry")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Loading latest crypto news...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
-        }
-
-        // News list - Limited to 10 cards for better performance
-        newsState.news.take(10).forEachIndexed { index, article ->
-            item {
-                RealCryptoNewsCard(
-                    article = article,
-                    onClick = {
-                        Log.d("Navigation", "Card clicked! Article index: $index, title: ${article.title}")
-                        try {
-                            navController.navigate("article_detail/$index")
-                            Log.d("Navigation", "Navigation triggered successfully")
-                        } catch (e: Exception) {
-                            Log.e("Navigation", "Navigation failed: ${e.message}")
+            
+            // Error state
+            newsState.error?.let { error ->
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
+                                contentDescription = "Error",
+                                tint = Color.Red
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Failed to load news",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.Red,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = error,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Red.copy(alpha = 0.7f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { viewModel.retryLoading() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Red,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Retry")
+                            }
                         }
                     }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
-        }
-        
-        // Empty state
-        if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+
+            // Search results info
+            if (searchQuery.isNotEmpty() && !newsState.isLoading) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "No news",
-                            tint = Color.Gray,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No news available",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.Gray
+                            text = "${newsState.news.size} results for \"$searchQuery\"",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Medium
                         )
-                        Text(
-                            text = "Pull to refresh or try again later",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                        if (newsState.news.isEmpty()) {
+                            TextButton(
+                                onClick = { viewModel.clearSearch() }
+                            ) {
+                                Text("Clear search")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+
+            // News list - Limited to 10 cards for better performance
+            newsState.news.take(10).forEachIndexed { index, article ->
+                item {
+                    RealCryptoNewsCard(
+                        article = article,
+                        onClick = {
+                            Log.d("Navigation", "Card clicked! Article index: $index, title: ${article.title}")
+                            try {
+                                navController.navigate("article_detail/$index")
+                                Log.d("Navigation", "Navigation triggered successfully")
+                            } catch (e: Exception) {
+                                Log.e("Navigation", "Navigation failed: ${e.message}")
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+            
+            // Empty state for search results
+            if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty() && searchQuery.isNotEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.SearchOff,
+                                contentDescription = "No results",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No articles found",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = "Try different keywords or clear your search",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            TextButton(
+                                onClick = { viewModel.clearSearch() }
+                            ) {
+                                Text("Clear search")
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Empty state for no news
+            if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty() && searchQuery.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Info,
+                                contentDescription = "No news",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No news available",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = "Pull to refresh or try again later",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 
 // --- Reusable Card Composable for Real API Data ---
 

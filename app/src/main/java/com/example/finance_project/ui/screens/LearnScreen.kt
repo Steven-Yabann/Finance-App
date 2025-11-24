@@ -6,6 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,7 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,7 +56,9 @@ fun LearnScreen(
 ) {
     val context = LocalContext.current
     val topics by viewModel.topics.collectAsState()
-    val isLoading = topics.isEmpty()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val isLoading = topics.isEmpty() && searchQuery.isEmpty()
 
     // Load topics once
     LaunchedEffect(Unit) {
@@ -89,34 +97,95 @@ fun LearnScreen(
                 )
             }
 
-            // Stats Cards Row
-            Row(
+            // Search Bar
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = 20.dp)
             ) {
-                StatsCard(
-                    title = "Completed",
-                    value = "0",
-                    icon = R.drawable.ic_lessons,
-                    color = FinanceGreen,
-                    modifier = Modifier.weight(1f)
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.searchTopics(it) },
+                    label = { Text("Search topics...") },
+                    placeholder = { Text("Stocks, Crypto, Budgeting, etc.") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = TechBlue
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.clearSearch() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear search",
+                                    tint = TextSecondary
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = TechBlue,
+                        focusedLabelColor = TechBlue
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Search
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            keyboardController?.hide()
+                        }
+                    )
                 )
-                StatsCard(
-                    title = "In Progress",
-                    value = "${topics.size}",
-                    icon = R.drawable.ic_time,
-                    color = TechBlue,
-                    modifier = Modifier.weight(1f)
-                )
+                
+                // Search results info
+                if (searchQuery.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "${topics.size} topics found for \"$searchQuery\"",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Stats Cards Row (only show when not searching)
+            if (searchQuery.isEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatsCard(
+                        title = "Completed",
+                        value = "0",
+                        icon = R.drawable.ic_lessons,
+                        color = FinanceGreen,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatsCard(
+                        title = "In Progress",
+                        value = "${topics.size}",
+                        icon = R.drawable.ic_time,
+                        color = TechBlue,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             // Section Title
             Text(
-                text = "Explore Topics",
+                text = if (searchQuery.isEmpty()) "Explore Topics" else "Search Results",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -130,6 +199,41 @@ fun LearnScreen(
             if (isLoading) {
                 repeat(3) {
                     ShimmerLearnCard(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+                }
+            } else if (topics.isEmpty() && searchQuery.isNotEmpty()) {
+                // No search results
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SearchOff,
+                        contentDescription = "No results",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No topics found",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Try different keywords or explore all topics",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { viewModel.clearSearch() },
+                        colors = ButtonDefaults.buttonColors(containerColor = TechBlue)
+                    ) {
+                        Text("Show All Topics")
+                    }
                 }
             } else {
                 // Topic Cards
