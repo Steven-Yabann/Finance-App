@@ -80,16 +80,6 @@ fun ProfileScreen(navController: NavController) {
             }
             item {
                 ProfileSettingCard(
-                    title = "Edit Profile",
-                    subtitle = "Update your personal information",
-                    icon = Icons.Default.Person,
-                    onClick = { /* Navigate to edit profile screen */ },
-                    themeColor = themeState.getCurrentPrimaryColor(),
-                    isDarkMode = themeState.isDarkMode
-                )
-            }
-            item {
-                ProfileSettingCard(
                     title = "Learning Progress",
                     subtitle = "Track your learning journey",
                     icon = Icons.Default.TrendingUp,
@@ -161,27 +151,6 @@ fun ProfileScreen(navController: NavController) {
             // Security Section
             item {
                 SectionHeader("Security", themeState.getCurrentPrimaryColor(), themeState.isDarkMode)
-            }
-            item {
-                ProfileSettingCard(
-                    title = "Change Password",
-                    subtitle = "Update your account password",
-                    icon = Icons.Default.Lock,
-                    onClick = { /* TODO: Implement password change */ },
-                    themeColor = themeState.getCurrentPrimaryColor(),
-                    isDarkMode = themeState.isDarkMode
-                )
-            }
-            item {
-                ProfileSettingCard(
-                    title = "Delete Account",
-                    subtitle = "Permanently delete your account",
-                    icon = Icons.Default.Delete,
-                    onClick = { showDeleteDialog = true },
-                    isDestructive = true,
-                    themeColor = themeState.getCurrentPrimaryColor(),
-                    isDarkMode = themeState.isDarkMode
-                )
             }
             
             item {
