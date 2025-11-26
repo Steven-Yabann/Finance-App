@@ -1,6 +1,5 @@
 package com.example.finance_project.ui.screens
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.finance_project.ui.viewmodel.LearnViewModel
+import android.content.Intent
+import android.net.Uri
 
 // Color Palette
 private val FinanceGreen = Color(0xFF10B981)
@@ -38,6 +39,7 @@ private val BackgroundLight = Color(0xFFF8FAFC)
 private val TextPrimary = Color(0xFF1E293B)
 private val TextSecondary = Color(0xFF64748B)
 private val AccentPrimary = Color(0xFF6366F1)
+private val CompleteGreen = Color(0xFF10B981) // New color for completion state
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +58,7 @@ fun TopicDetailScreen(
     }
 
     val topic = topics.find { it.id == topicId }
+    val isCompleted = topic?.isCompleted ?: false // Assume 'isCompleted' property exists on Topic model.
 
     if (topic == null) {
         Box(
@@ -229,7 +232,7 @@ fun TopicDetailScreen(
 
                 // Sections with Enhanced Cards
                 topic.sections.forEachIndexed { index, section ->
-                    EnhancedSectionCard(
+                    SectionCard(
                         sectionNumber = index + 1,
                         title = section.title,
                         content = section.content,
@@ -247,20 +250,26 @@ fun TopicDetailScreen(
 
                 // Action Button
                 Button(
-                    onClick = { /* Mark as complete */ },
+                    onClick = {
+                        // 1. Mark the topic as completed in the ViewModel
+                        viewModel.markTopicCompleted(topic.id)
+                        // 2. Navigate back to the LearnScreen
+                        navController.popBackStack()
+                    },
+                    enabled = !isCompleted, // Disable button if already completed
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentPrimary
+                        containerColor = if (isCompleted) CompleteGreen else AccentPrimary // Change color if completed
                     ),
                     elevation = ButtonDefaults.buttonElevation(
                         defaultElevation = 4.dp
                     )
                 ) {
                     Text(
-                        text = "Mark as Complete",
+                        text = if (isCompleted) "Completed 🎉" else "Mark as Complete",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -272,6 +281,8 @@ fun TopicDetailScreen(
         }
     }
 }
+
+// ... (Rest of the composable functions remain unchanged)
 
 @Composable
 fun InfoChip(
@@ -311,7 +322,7 @@ fun InfoChip(
 }
 
 @Composable
-fun EnhancedSectionCard(
+fun SectionCard(
     sectionNumber: Int,
     title: String,
     content: String,
@@ -397,6 +408,9 @@ fun EnhancedSectionCard(
 
 @Composable
 fun VideoCard(videoUrl: String) {
+    // Get the current context to launch the Intent
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -461,7 +475,11 @@ fun VideoCard(videoUrl: String) {
                 color = BackgroundLight,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { /* Open video */ }
+                    .clickable {
+                        // OPEN YOUTUBE
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl))
+                        context.startActivity(intent)
+                    }
             ) {
                 Text(
                     text = videoUrl,
