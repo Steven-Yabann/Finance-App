@@ -6,7 +6,8 @@ data class TopicModel (
     val subtitle: String,
     val imageUrl: String,
     val sections: List<TopicSection>,
-    val videoUrl: String? = null
+    val videoUrl: String? = null,
+    val isCompleted: Boolean
 )
 
 data class TopicSection (

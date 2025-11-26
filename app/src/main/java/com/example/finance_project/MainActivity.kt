@@ -43,8 +43,6 @@ import com.example.finance_project.ui.viewmodel.getFormattedTime
 import com.example.finance_project.ui.viewmodel.getMainCategory
 import com.example.finance_project.ui.viewmodel.getSentiment
 import com.example.finance_project.data.model.CryptoNewsArticle
-
-
 import com.example.finance_project.ui.theme.Finance_ProjectTheme
 import com.example.finance_project.ui.screens.LearnScreen
 import com.google.firebase.FirebaseApp
@@ -52,10 +50,6 @@ import com.example.finance_project.ui.screens.ProfileScreen
 import com.example.finance_project.ui.screens.TopicDetailScreen
 
 
-// --- Data Classes for UI Content ---
-// Real API integration - no dummy data needed
-
-// --- MainActivity: Entry point of the app ---
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalFoundationApi::class)
@@ -66,15 +60,13 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         Log.d("FirebaseInit", "Firebase initialized: ${FirebaseApp.getApps(this).isNotEmpty()}")
         setContent {
-            // Use your app's theme here
-            Finance_ProjectTheme { // Changed from YourAppTheme
+            Finance_ProjectTheme {
                 MainScreen()
             }
         }
     }
 }
 
-// --- Main Composable: Defines the overall screen structure ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,11 +160,10 @@ fun MainScreen() {
 
 
 
-// --- Top Bar Composable ---
 
 @Composable
 fun AppTopBar() {
-    // We are using a simple Row instead of TopAppBar to match the simple design
+    // Using a simple Row instead of TopAppBar
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -192,7 +183,6 @@ fun AppTopBar() {
     }
 }
 
-// --- Bottom Navigation Bar Composable ---
 
 @Composable
 fun AppBottomBar(navController: NavHostController) {
@@ -270,7 +260,7 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
                 ) {
                     Column {
                         Text(
-                            text = "Crypto News",
+                            text = "News",
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(

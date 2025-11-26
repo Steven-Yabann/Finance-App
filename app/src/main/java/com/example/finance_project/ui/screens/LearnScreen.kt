@@ -4,7 +4,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.rememberScrollState
@@ -38,6 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.finance_project.R
 import com.example.finance_project.ui.viewmodel.LearnViewModel
 
+
 // Color Palette
 private val FinanceGreen = Color(0xFF10B981)
 private val TechBlue = Color(0xFF3B82F6)
@@ -48,6 +47,9 @@ private val TealCyan = Color(0xFF06B6D4)
 private val BackgroundLight = Color(0xFFF8FAFC)
 private val TextPrimary = Color(0xFF1E293B)
 private val TextSecondary = Color(0xFF64748B)
+
+// New Color for Completion Status
+private val CompleteGreen = Color(0xFF10B981)
 
 @Composable
 fun LearnScreen(
@@ -66,7 +68,7 @@ fun LearnScreen(
     }
 
     Scaffold(
-        topBar = { EnhancedLearnTopBar() },
+        topBar = { LearnTopBar() },
         containerColor = BackgroundLight
     ) { paddingValues ->
         Column(
@@ -143,7 +145,7 @@ fun LearnScreen(
                         }
                     )
                 )
-                
+
                 // Search results info
                 if (searchQuery.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -157,31 +159,6 @@ fun LearnScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Stats Cards Row (only show when not searching)
-            if (searchQuery.isEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatsCard(
-                        title = "Completed",
-                        value = "0",
-                        icon = R.drawable.ic_lessons,
-                        color = FinanceGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatsCard(
-                        title = "In Progress",
-                        value = "${topics.size}",
-                        icon = R.drawable.ic_time,
-                        color = TechBlue,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
             // Section Title
             Text(
@@ -239,14 +216,14 @@ fun LearnScreen(
                 // Topic Cards
                 topics.forEachIndexed { index, topic ->
                     val cardColor = getTopicColor(index)
-                    EnhancedLearnCard(
+                    LearnCard(
                         title = topic.title,
                         description = topic.subtitle,
                         color = cardColor,
-                        progress = 0f,
+                        isCompleted = topic.isCompleted,
+                        progress = if (topic.isCompleted) 1f else 0f,
                         lessons = topic.sections.size,
                         duration = "~${topic.sections.size * 5} min",
-                        buttonText = "Start",
                         onClick = { navController.navigate("topicDetail/${topic.id}") },
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                     )
@@ -259,7 +236,7 @@ fun LearnScreen(
 }
 
 @Composable
-fun EnhancedLearnTopBar() {
+fun LearnTopBar() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -324,14 +301,14 @@ fun StatsCard(
 }
 
 @Composable
-fun EnhancedLearnCard(
+fun LearnCard(
     title: String,
     description: String,
     color: Color,
+    isCompleted: Boolean, // <-- NEW PARAMETER
     progress: Float,
     lessons: Int,
     duration: String,
-    buttonText: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -344,11 +321,17 @@ fun EnhancedLearnCard(
         )
     )
 
+    // Determine button state dynamically
+    val buttonText = if (isCompleted) "Completed" else "Start"
+    val buttonColor = if (isCompleted) CompleteGreen else color
+    val isButtonEnabled = !isCompleted
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
             .clickable {
+                // Card click should navigate regardless of completion status
                 isPressed = true
                 onClick()
             },
@@ -436,9 +419,10 @@ fun EnhancedLearnCard(
                     )
                 )
                 Text(
+                    // Progress text shows 100% if completed
                     text = "${(progress * 100).toInt()}%",
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = color,
+                        color = buttonColor, // Use the completion color here
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -465,7 +449,8 @@ fun EnhancedLearnCard(
                         .clip(RoundedCornerShape(4.dp))
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(color, color.copy(alpha = 0.7f))
+                                // Use the button color for the progress bar if completed
+                                colors = listOf(buttonColor, buttonColor.copy(alpha = 0.7f))
                             )
                         )
                 )
@@ -479,53 +464,14 @@ fun EnhancedLearnCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Lessons and Duration
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Lessons
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_lessons),
-                            contentDescription = null,
-                            tint = TextSecondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "$lessons lessons",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = TextSecondary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Duration
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_time),
-                            contentDescription = null,
-                            tint = TextSecondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = duration,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = TextSecondary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        )
-                    }
-                }
 
                 // Action Button
                 Button(
                     onClick = onClick,
+                    enabled = isButtonEnabled, // Disabled when completed
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = color,
+                        containerColor = buttonColor,
                         contentColor = Color.White
                     ),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
@@ -535,7 +481,7 @@ fun EnhancedLearnCard(
                     )
                 ) {
                     Text(
-                        text = buttonText,
+                        text = buttonText, // Dynamic text
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -625,6 +571,6 @@ private fun getTopicColor(index: Int): Color {
 
 @Preview(showBackground = true)
 @Composable
-fun EnhancedLearnScreenPreview() {
+fun LearnScreenPreview() {
     LearnScreen(navController = rememberNavController())
 }
