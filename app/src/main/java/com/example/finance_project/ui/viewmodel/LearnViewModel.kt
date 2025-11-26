@@ -9,12 +9,13 @@ import com.example.finance_project.data.repository.TopicRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 class LearnViewModel : ViewModel() {
     private val _allTopics = MutableStateFlow<List<TopicModel>>(emptyList())
     private val _topics = MutableStateFlow<List<TopicModel>>(emptyList())
     val topics: StateFlow<List<TopicModel>> = _topics
-    
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
@@ -31,7 +32,31 @@ class LearnViewModel : ViewModel() {
             }
         }
     }
-    
+
+    fun markTopicCompleted(topicId: String?) {
+        if (topicId == null) return
+
+        // Helper function to create the updated list
+        val updateTopicList: (List<TopicModel>) -> List<TopicModel> = { list ->
+            list.map { topic ->
+                if (topic.id == topicId) {
+                    topic.copy(isCompleted = true)
+                } else {
+                    topic
+                }
+            }
+        }
+
+        // Update the master list (_allTopics)
+        _allTopics.update(updateTopicList)
+
+        // Update the currently visible list (_topics)
+        _topics.update(updateTopicList)
+
+        // To stay persistent
+        Log.d("LearnViewModel", "Topic $topicId marked as completed.")
+    }
+
     fun searchTopics(query: String) {
         _searchQuery.value = query
         if (query.isEmpty()) {
@@ -39,16 +64,16 @@ class LearnViewModel : ViewModel() {
         } else {
             val filteredTopics = _allTopics.value.filter { topic ->
                 topic.title.contains(query, ignoreCase = true) ||
-                topic.subtitle.contains(query, ignoreCase = true) ||
-                topic.sections.any { section -> 
-                    section.title.contains(query, ignoreCase = true) ||
-                    section.content.contains(query, ignoreCase = true)
-                }
+                        topic.subtitle.contains(query, ignoreCase = true) ||
+                        topic.sections.any { section ->
+                            section.title.contains(query, ignoreCase = true) ||
+                                    section.content.contains(query, ignoreCase = true)
+                        }
             }
             _topics.value = filteredTopics
         }
     }
-    
+
     fun clearSearch() {
         searchTopics("")
     }

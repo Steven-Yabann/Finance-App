@@ -8,11 +8,11 @@
     "sections": [
       {
         "title": "What are T-Bills?",
-        "content": "T-Bills are short-term debt instruments issued by the government to raise funds. They typically mature in less than one year."
+        "content": "T-Bills are short-term debt instruments issued by the government to raise funds. They typically mature in less than one year. As a short-term debt security, when you purchase a T-Bill, you are essentially lending money to the US government for a specific amount of time, ranging from 4 weeks up to a year. The government pays you back your initial investment plus profit after this time."
       },
       {
         "title": "How They Work",
-        "content": "Investors buy T-Bills at a discount and receive the full face value at maturity. The difference represents the earned interest."
+        "content": "Investors buy T-Bills at a discount and receive the full face value at maturity. The difference represents the earned interest. This process, where the T-bill is sold at a discount to its par value and redeemed at the full par value at maturity, means the profit is the difference between your lower purchase price and the higher par value. For example, buying a $1,000 T-bill for $950 means you earn $50 in profit when it matures in 6 months. Importantly, T-bills do not pay interest periodically like Treasury bonds. T-bill earnings are exempt from state and local income taxes, but you still pay federal income tax."
       }
     ]
   },
@@ -25,11 +25,11 @@
     "sections": [
       {
         "title": "Overview",
-        "content": "Bonds are long-term investments that pay periodic interest and return the principal at maturity."
+        "content": "Bonds are long-term investments that pay periodic interest and return the principal at maturity. Bonds are essentially a type of loan where investors lend money to governments or corporations. For governments, this borrowed money can fund various public works and investments like schools and hospitals. The issuer promises to pay back the principal at the end of the term, known as maturity, along with regular interest payments, often referred to as a coupon."
       },
       {
         "title": "Risk and Return",
-        "content": "Bonds generally offer lower risk compared to stocks but can vary depending on the issuer's credit rating."
+        "content": "Bonds generally offer lower risk compared to stocks but can vary depending on the issuer's credit rating. Government bonds are often considered a safer investment because they are backed by the government's taxes, though this safety often translates to lower interest rates compared to corporate bonds. Corporate bonds carry more risk but may offer bigger potential payouts. However, the risk of default exists, especially if the issuer (like a government) faces financial trouble."
       }
     ]
   },
@@ -42,11 +42,11 @@
     "sections": [
       {
         "title": "What are Stocks?",
-        "content": "Stocks, or equities, represent partial ownership in a public company. Investors buy them for potential capital appreciation (the stock price rising) and for income through dividend payments."
+        "content": "Stocks, or equities, represent partial ownership in a public company. Investors buy them for potential capital appreciation (the stock price rising) and for income through dividend payments. A stock is a single unit of ownership in a company. Companies issue stocks to raise capital for purposes like business expansion or funding new projects. As a shareholder, you own a part of the company and are entitled to a share of its profits. Stocks are bought and sold on a stock exchange, such as the New York Stock Exchange (NYSE) or NASDAQ."
       },
       {
         "title": "Types and Risks",
-        "content": "There are two main types: Common stock (with voting rights) and Preferred stock (with priority on dividends). Stocks offer the greatest potential for long-term growth but also carry a higher risk due to potential dramatic price fluctuations."
+        "content": "There are two main types: Common stock (with voting rights) and Preferred stock (with priority on dividends). Stocks offer the greatest potential for long-term growth but also carry a higher risk due to potential dramatic price fluctuations. The primary ways to make money from stocks are through capital appreciation—selling shares later at a higher price if the company does well—and through dividends, which are parts of the company's profits given to shareholders. However, if the company underperforms, the stock value can drop, leading to a loss of the initial investment. It is important to diversify investments across different stocks to mitigate this risk."
       }
     ]
   },
@@ -59,11 +59,11 @@
     "sections": [
       {
         "title": "What is a Mutual Fund?",
-        "content": "A Mutual Fund is an investment vehicle that pools money from many investors to purchase a diversified portfolio of securities like stocks, bonds, and money market instruments."
+        "content": "A Mutual Fund is an investment vehicle that pools money from many investors to purchase a diversified portfolio of securities like stocks, bonds, and money market instruments. This pooling of money is what gives the fund its name—investors are 'mutually' contributing to a single 'fund'. The fund is managed by an Asset Management Company (AMC), which employs a professional Fund Manager to determine the investments."
       },
       {
         "title": "Key Benefits",
-        "content": "The funds are managed by a professional fund manager who makes investment decisions. The primary benefit is diversification, which helps reduce the risk typically associated with investing in a single stock or security."
+        "content": "The funds are managed by a professional fund manager who makes investment decisions. The primary benefit is diversification, which helps reduce the risk typically associated with investing in a single stock or security. Because many investors contribute, mutual funds offer cost-efficiency; the management fee (expense ratio) is a small percentage of the total fund value, making expert advice highly affordable for a small investor. The fund structure also offers protection: if the AMC were to go bankrupt, the investor's money is safeguarded because the AMC only manages the assets, which are actually owned by a SEBI-registered trust. By investing in a diversified fund, investors can also protect against the extreme downside risk often associated with investing directly in individual stocks."
       }
     ]
   }
