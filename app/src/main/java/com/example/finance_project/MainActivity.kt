@@ -251,80 +251,86 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
             .padding(horizontal = 16.dp)
     ) {
             item {
-                Spacer(modifier = Modifier.height(8.dp))
-                // Title Section
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Minimal Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "News",
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = "Latest cryptocurrency news • ${newsState.news.size} articles",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
-                        )
-                    }
+                    Text(
+                        text = "News",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                     
-                    // Refresh button
-                    IconButton(
-                        onClick = { viewModel.loadCryptoNews() },
-                        enabled = !newsState.isLoading
-                    ) {
-                        if (newsState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
+                    // Minimal refresh button
+                    if (newsState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        IconButton(
+                            onClick = { viewModel.loadCryptoNews() },
+                            modifier = Modifier.size(32.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Refresh",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
                 
-                // Search Bar
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Minimal Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.searchNews(it) },
-                    label = { Text("Search news...") },
-                    placeholder = { Text("Bitcoin, Ethereum, DeFi, etc.") },
+                    placeholder = { 
+                        Text(
+                            "Search...",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        ) 
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
+                            contentDescription = "Search",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            modifier = Modifier.size(18.dp)
                         )
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(
-                                onClick = { viewModel.clearSearch() }
+                                onClick = { viewModel.clearSearch() },
+                                modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Clear,
-                                    contentDescription = "Clear search"
+                                    contentDescription = "Clear",
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search
+                    shape = RoundedCornerShape(24.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            keyboardController?.hide()
-                        }
-                    )
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             }
@@ -333,22 +339,16 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
             if (newsState.isLoading) {
                 item {
                     Box(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(40.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Loading latest crypto news...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray
-                            )
-                        }
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
                     }
                 }
             }
@@ -356,171 +356,95 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
             // Error state
             newsState.error?.let { error ->
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.1f))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Warning,
                                 contentDescription = "Error",
-                                tint = Color.Red
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Unable to load news",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Failed to load news",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.Red,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = error,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Red.copy(alpha = 0.7f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { viewModel.retryLoading() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Red,
-                                    contentColor = Color.White
-                                )
+                            TextButton(
+                                onClick = { viewModel.retryLoading() }
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
+                                Text(
+                                    "Try again",
+                                    color = MaterialTheme.colorScheme.primary
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Retry")
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
 
             // Search results info
-            if (searchQuery.isNotEmpty() && !newsState.isLoading) {
+            if (searchQuery.isNotEmpty() && !newsState.isLoading && newsState.news.isNotEmpty()) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${newsState.news.size} results for \"$searchQuery\"",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
-                            fontWeight = FontWeight.Medium
-                        )
-                        if (newsState.news.isEmpty()) {
-                            TextButton(
-                                onClick = { viewModel.clearSearch() }
-                            ) {
-                                Text("Clear search")
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "${newsState.news.size} results",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                 }
             }
 
             // News list - Limited to 10 cards for better performance
-            newsState.news.take(10).forEachIndexed { index, article ->
+            newsState.news.take(8).forEachIndexed { index, article ->
                 item {
-                    RealCryptoNewsCard(
+                    MinimalNewsCard(
                         article = article,
                         onClick = {
-                            Log.d("Navigation", "Card clicked! Article index: $index, title: ${article.title}")
                             try {
                                 navController.navigate("article_detail/$index")
-                                Log.d("Navigation", "Navigation triggered successfully")
                             } catch (e: Exception) {
                                 Log.e("Navigation", "Navigation failed: ${e.message}")
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
             
-            // Empty state for search results
-            if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty() && searchQuery.isNotEmpty()) {
+            // Empty states
+            if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(32.dp),
+                            .padding(40.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.SearchOff,
-                                contentDescription = "No results",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(48.dp)
+                                imageVector = if (searchQuery.isNotEmpty()) Icons.Filled.SearchOff else Icons.Filled.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                                modifier = Modifier.size(32.dp)
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "No articles found",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Try different keywords or clear your search",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextButton(
-                                onClick = { viewModel.clearSearch() }
-                            ) {
-                                Text("Clear search")
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Empty state for no news
-            if (!newsState.isLoading && newsState.error == null && newsState.news.isEmpty() && searchQuery.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Info,
-                                contentDescription = "No news",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "No news available",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "Pull to refresh or try again later",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
+                                text = if (searchQuery.isNotEmpty()) "No results" else "No news",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                             )
                         }
                     }
@@ -529,7 +453,61 @@ fun CryptoNewsScreen(modifier: Modifier = Modifier, viewModel: CryptoNewsViewMod
         }
     }
 
-// --- Reusable Card Composable for Real API Data ---
+// --- Minimal News Card ---
+
+@Composable
+fun MinimalNewsCard(article: CryptoNewsArticle, onClick: () -> Unit = {}) {
+    val category = article.getMainCategory()
+    val timeAgo = article.getFormattedTime()
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header with category and time
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = category,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = timeAgo,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Title
+            Text(
+                text = article.title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                lineHeight = 20.sp
+            )
+        }
+    }
+}
 
 @Composable
 fun RealCryptoNewsCard(article: CryptoNewsArticle, onClick: () -> Unit = {}) {
