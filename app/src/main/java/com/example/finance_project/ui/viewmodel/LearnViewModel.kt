@@ -2,33 +2,38 @@ package com.example.finance_project.ui.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finance_project.data.model.TopicModel
 import com.example.finance_project.data.repository.TopicRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 
 class LearnViewModel : ViewModel() {
-    private val _allTopics = MutableStateFlow<List<TopicModel>>(emptyList())
-    private val _topics = MutableStateFlow<List<TopicModel>>(emptyList())
-    val topics: StateFlow<List<TopicModel>> = _topics
+    var topics by mutableStateOf<List<TopicModel>>(emptyList())
+        private set
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
+    var searchQuery by mutableStateOf("")
+        private set
+
+    // Keep a copy of all data to filter against
+    private var allTopics = listOf<TopicModel>()
 
     fun loadTopics(context: Context) {
         viewModelScope.launch {
             val repository = TopicRepository(context)
             val data = repository.loadTopics()
             Log.d("LearnViewModel", "Loaded ${data.size} topics")
-            _allTopics.value = data
-            _topics.value = data
-            // Apply current search if any
-            if (_searchQuery.value.isNotEmpty()) {
-                searchTopics(_searchQuery.value)
+
+            allTopics = data
+
+            // Apply search if needed, otherwise show all
+            if (searchQuery.isEmpty()) {
+                topics = data
+            } else {
+                searchTopics(searchQuery)
             }
         }
     }
@@ -36,33 +41,23 @@ class LearnViewModel : ViewModel() {
     fun markTopicCompleted(topicId: String?) {
         if (topicId == null) return
 
-        // Helper function to create the updated list
-        val updateTopicList: (List<TopicModel>) -> List<TopicModel> = { list ->
-            list.map { topic ->
-                if (topic.id == topicId) {
-                    topic.copy(isCompleted = true)
-                } else {
-                    topic
-                }
+        // Simple logic: Create a new list with the modified item
+        val updatedList = allTopics.map { topic ->
+            if (topic.id == topicId) {
+                topic.copy(isCompleted = true)
+            } else {
+                topic
             }
         }
 
-        // Update the master list (_allTopics)
-        _allTopics.update(updateTopicList)
-
-        // Update the currently visible list (_topics)
-        _topics.update(updateTopicList)
-
-        // To stay persistent
-        Log.d("LearnViewModel", "Topic $topicId marked as completed.")
     }
 
     fun searchTopics(query: String) {
-        _searchQuery.value = query
+        searchQuery = query
         if (query.isEmpty()) {
-            _topics.value = _allTopics.value
+            topics = allTopics
         } else {
-            val filteredTopics = _allTopics.value.filter { topic ->
+            topics = allTopics.filter { topic ->
                 topic.title.contains(query, ignoreCase = true) ||
                         topic.subtitle.contains(query, ignoreCase = true) ||
                         topic.sections.any { section ->
@@ -70,7 +65,6 @@ class LearnViewModel : ViewModel() {
                                     section.content.contains(query, ignoreCase = true)
                         }
             }
-            _topics.value = filteredTopics
         }
     }
 
