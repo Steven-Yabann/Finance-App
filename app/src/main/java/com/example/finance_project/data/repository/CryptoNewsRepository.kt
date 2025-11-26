@@ -9,8 +9,7 @@ class CryptoNewsRepository {
     
     suspend fun getCryptoNews(): Result<CryptoNewsResponse> = withContext(Dispatchers.IO) {
         try {
-            // CryptoCompare offers free tier without API key for limited requests
-            // For production, you should get a free API key from cryptocompare.com
+
             val response = RetrofitInstance.cryptoNewsApi.getCryptoNews(
                 language = "EN",
                 sortOrder = "latest",

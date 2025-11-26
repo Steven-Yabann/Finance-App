@@ -88,9 +88,9 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-
+            if (isLoggedIn) {
                 AppBottomBar(navController)
-
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
