@@ -35,7 +35,7 @@ import com.example.finance_project.ui.viewmodel.LearnViewModel
 private val BackgroundLight = Color(0xFFF8FAFC)
 private val TextPrimary = Color(0xFF1E293B)
 private val TextSecondary = Color(0xFF64748B)
-private val AccentColor = Color(0xFF6366F1)
+val AccentColor = Color(0xFF6366F1)
 private val CardWhite = Color.White
 
 @OptIn(ExperimentalMaterial3Api::class)

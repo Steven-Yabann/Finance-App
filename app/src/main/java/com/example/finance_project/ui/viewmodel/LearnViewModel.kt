@@ -41,15 +41,13 @@ class LearnViewModel : ViewModel() {
     fun markTopicCompleted(topicId: String?) {
         if (topicId == null) return
 
-        // Simple logic: Create a new list with the modified item
         val updatedList = allTopics.map { topic ->
-            if (topic.id == topicId) {
-                topic.copy(isCompleted = true)
-            } else {
-                topic
-            }
+            if (topic.id == topicId) topic.copy(isCompleted = true)
+            else topic
         }
 
+        allTopics = updatedList
+        topics = updatedList
     }
 
     fun searchTopics(query: String) {

@@ -24,10 +24,6 @@ import androidx.compose.foundation.lazy.*
 import com.example.finance_project.R
 import com.example.finance_project.ui.viewmodel.LearnViewModel
 
-// ----------------------
-//  Minimal Color Palette
-// ----------------------
-
 private val FinanceGreen = Color(0xFF10B981)
 private val TechBlue = Color(0xFF3B82F6)
 private val GoldYellow = Color(0xFFF59E0B)
@@ -41,9 +37,6 @@ private val TextSecondary = Color(0xFF64748B)
 
 private val CompleteGreen = Color(0xFF10B981)
 
-// ----------------------
-//  MAIN SCREEN
-// ----------------------
 
 @Composable
 fun LearnScreen(
@@ -54,9 +47,13 @@ fun LearnScreen(
     val topics = viewModel.topics
     val isLoading = topics.isEmpty()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadTopics(context)
+    if (topics.isEmpty()) {
+        LaunchedEffect(Unit) {
+            viewModel.loadTopics(context)
+        }
     }
+
+
 
     Scaffold(
         topBar = { TopBar() },
@@ -134,9 +131,6 @@ fun TopBar() {
     }
 }
 
-// ----------------------
-//  TOPIC CARD (Minimal)
-// ----------------------
 
 @Composable
 fun LearnCard(
@@ -152,7 +146,7 @@ fun LearnCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(0.dp) // Flat & minimal
+        elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -161,6 +155,7 @@ fun LearnCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
+            // Icon
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -195,9 +190,26 @@ fun LearnCard(
                 )
             }
 
+            if (isCompleted) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(CompleteGreen.copy(alpha = 0.15f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Done",
+                        color = CompleteGreen,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
         }
     }
 }
+
 
 
 private fun getTopicColor(index: Int): Color {
@@ -208,9 +220,6 @@ private fun getTopicColor(index: Int): Color {
     return colors[index % colors.size]
 }
 
-// ----------------------
-//  PREVIEW
-// ----------------------
 
 @Preview(showBackground = true)
 @Composable

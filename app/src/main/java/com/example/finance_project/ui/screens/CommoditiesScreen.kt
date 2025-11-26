@@ -18,7 +18,7 @@ import com.example.finance_project.ui.viewmodel.MarketViewModel
 @Composable
 fun CommoditiesScreen(viewModel: MarketViewModel = viewModel()) {
     // Available options
-    val commodities = listOf("WHEAT", "COPPER", "ALUMINUM")
+    val commodities = listOf("WHEAT", "COPPER", "ALUMINIUM")
     val intervals = listOf("monthly")
 
     // Currently selected options
